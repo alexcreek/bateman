@@ -1,5 +1,5 @@
 import pytest
-from package import module
+import bateman
 
 # https://docs.pytest.org/en/6.2.x/getting-started.html
 # https://docs.pytest.org/en/6.2.x/monkeypatch.html
