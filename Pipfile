@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-requests = "*"
+spivey = {editable = true, ref = "main", git = "https://github.com/alexcreek/spivey.git"}
 
 [dev-packages]
 pytest = "==6.2.*"
