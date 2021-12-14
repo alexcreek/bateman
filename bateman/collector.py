@@ -1,10 +1,11 @@
 import os
 import sys
 import time
-from datetime import datetime
+from datetime import datetime as dt
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
+import spivey
 
 # TODO: make a config file
 load_dotenv()
@@ -14,6 +15,9 @@ except KeyError as e:
     print(f'{e} environment variable not found')
     sys.exit(1)
 
+s = spivey.Client()
+o = s.options('$VIX.X', 90)
+
 org = 'personal'
 bucket = 'why'
 influx_url = 'http://192.168.1.10'
@@ -22,10 +26,29 @@ influx_port = '8086'
 with InfluxDBClient(url=f'{influx_url}:{influx_port}', token=token, org=org) as client:
     write_api = client.write_api(write_options=SYNCHRONOUS)
 
-    for i in range(1, 20):
-#        data = f"mem,host=host2 used_percent={i}"
-        #p = Point("my_measurement").tag("location", "New Mexico").field("temperature", i)
-        p = Point("$VIX.X").tag("exp", "19 JAN 22").field("strike", i)
+    points = []
 
-        write_api.write(bucket, org, p)
-        time.sleep(1)
+    for _action in ['putExpDateMap', 'callExpDateMap']:
+        for i in o[_action].keys():
+            for j in o[_action][i].keys():
+                for k in o[_action][i][j]:
+                    p = Point('things') \
+                        .tag('exp', i.split(':')[0]) \
+                        .tag('strike', k['strikePrice']) \
+                        .tag('symbol', '$VIX.X') \
+                        .tag('putCall', k['putCall'].lower()) \
+                        .field('bid', float(k['bid'])) \
+                        .field('ask', float(k['ask'])) \
+                        .field('openInterest', k['openInterest']) \
+                        .field('volume', int(k['totalVolume'])) \
+                        .field('theta', float(k['theta'])) \
+                        .field('delta', float(k['delta'])) \
+                        .field('volatility', float(k['volatility'])) \
+                        .field('daysToExpiration', float(k['daysToExpiration'])) \
+                        .field('percentChange', float(k['percentChange'])) \
+                        .field('mark', float(k['mark'])) \
+                        .field('timeValue', float(k['timeValue'])) \
+                        # need to set timezone when using time
+                        # .time(dt.now(), write_precision=WritePrecision.MS)
+                    points.append(p)
+    write_api.write(bucket, org, points)
