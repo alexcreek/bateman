@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 spivey = {editable = true, ref = "main", git = "https://github.com/alexcreek/spivey.git"}
+python-dotenv = "*"
+influxdb-client = "==1.*"
 
 [dev-packages]
 pytest = "==6.2.*"
