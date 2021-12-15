@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from datetime import datetime as dt
+from pytz import timezone
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
@@ -42,7 +43,8 @@ with InfluxDBClient(url=f'{influx_url}:{influx_port}', token=token, org=org) as 
             for j in o[_action][i].keys():
                 for k in o[_action][i][j]:
                     p = Point('options') \
-                        .tag('exp', i.split(':')[0]) \
+                        .tag('exp', dt.fromtimestamp(k['expirationDate']/1000,
+                            tz=timezone('EST')).strftime('%d %b %y').upper()) \
                         .tag('strike', k['strikePrice']) \
                         .tag('symbol', '$VIX.X') \
                         .tag('putCall', k['putCall'].lower()) \
