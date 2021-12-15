@@ -18,13 +18,22 @@ except KeyError as e:
 s = spivey.Client()
 o = s.options('$VIX.X', 90)
 
-org = 'personal'
-bucket = 'why'
+org = 'default'
+bucket = 'main'
 influx_url = 'http://192.168.1.10'
 influx_port = '8086'
 
 with InfluxDBClient(url=f'{influx_url}:{influx_port}', token=token, org=org) as client:
     write_api = client.write_api(write_options=SYNCHRONOUS)
+    #TODO
+    # - figure out batch settings
+    # - make exp the right format, I think it's in the original bateman
+    # - test putting theta and delta under greeks
+    # - unfuck this mess
+    # - figure out how to use ms precision (need to set timezone when using time)
+    #   .time(dt.now(), write_precision=WritePrecision.MS)
+    # - get a config file working
+    # - make some dashboards
 
     points = []
 
@@ -32,23 +41,22 @@ with InfluxDBClient(url=f'{influx_url}:{influx_port}', token=token, org=org) as 
         for i in o[_action].keys():
             for j in o[_action][i].keys():
                 for k in o[_action][i][j]:
-                    p = Point('things') \
+                    p = Point('options') \
                         .tag('exp', i.split(':')[0]) \
                         .tag('strike', k['strikePrice']) \
                         .tag('symbol', '$VIX.X') \
                         .tag('putCall', k['putCall'].lower()) \
-                        .field('bid', float(k['bid'])) \
-                        .field('ask', float(k['ask'])) \
+                        .field('bid', k['bid']) \
+                        .field('ask', k['ask']) \
                         .field('openInterest', k['openInterest']) \
-                        .field('volume', int(k['totalVolume'])) \
-                        .field('theta', float(k['theta'])) \
-                        .field('delta', float(k['delta'])) \
-                        .field('volatility', float(k['volatility'])) \
-                        .field('daysToExpiration', float(k['daysToExpiration'])) \
-                        .field('percentChange', float(k['percentChange'])) \
-                        .field('mark', float(k['mark'])) \
-                        .field('timeValue', float(k['timeValue'])) \
-                        # need to set timezone when using time
-                        # .time(dt.now(), write_precision=WritePrecision.MS)
+                        .field('volume', k['totalVolume']) \
+                        .field('theta', k['theta']) \
+                        .field('delta', k['delta']) \
+                        .field('volatility', k['volatility']) \
+                        .field('daysToExpiration', k['daysToExpiration']) \
+                        .field('percentChange', k['percentChange']) \
+                        .field('mark', k['mark']) \
+                        .field('timeValue', k['timeValue'])
                     points.append(p)
+    print(f'Sending {len(points)} contracts')
     write_api.write(bucket, org, points)
