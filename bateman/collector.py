@@ -6,6 +6,8 @@ import spivey
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
+from apscheduler.schedulers.blocking import BlockingScheduler
+
 
 def main():
     # TODO: make a config file
@@ -26,9 +28,11 @@ def main():
         # - figure out batch settings
         # - test putting theta and delta under greeks
         # - unfuck this mess - try building a dict and passing it to Point
-        # - figure out how to use ms precision (need to set timezone when using time)
+        # - figure out how to use ms precision (may need to set timezone when using time)
         #   .time(dt.now(), write_precision=WritePrecision.MS)
         # - get a config file working
+        # - abstract this out so it can collect the underlying for $VIX.X too
+        # - make a ui/api to CRUD jobs
 
         s = spivey.Client()
         o = s.options('$VIX.X', 90)
@@ -55,8 +59,12 @@ def main():
                             .field('mark', k['mark']) \
                             .field('timeValue', k['timeValue'])
                         points.append(p)
-        print(f'Sending {len(points)} contracts')
+        print(f'Storing {len(points)} contracts')
         write_api.write(bucket, org, points)
 
 if __name__ == '__main__':
-    main()
+    print(f"Started {__file__.rsplit('/', maxsplit=1)[-1]}")
+
+    sched = BlockingScheduler()
+    sched.add_job(main, trigger='cron', day_of_week='1-5', hour='9-16', second='*/30')
+    sched.start()
