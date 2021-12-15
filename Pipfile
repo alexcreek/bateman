@@ -7,6 +7,7 @@ name = "pypi"
 spivey = {editable = true, ref = "main", git = "https://github.com/alexcreek/spivey.git"}
 python-dotenv = "*"
 influxdb-client = "==1.*"
+apscheduler = "==3.8.*"
 
 [dev-packages]
 pytest = "==6.2.*"
