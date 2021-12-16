@@ -1,12 +1,15 @@
 import os
 import sys
+import logging
 from datetime import datetime as dt
-from pytz import timezone
 import spivey
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
 from apscheduler.schedulers.blocking import BlockingScheduler
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO)
 
 
 def main():
@@ -15,7 +18,7 @@ def main():
     try:
         token = os.environ['INFLUXDB_TOKEN']
     except KeyError as e:
-        print(f'{e} environment variable not found')
+        logging.critical('%s environment variable not found',  e)
         sys.exit(1)
 
     org = 'default'
@@ -51,20 +54,19 @@ def main():
                             .field('ask', k['ask']) \
                             .field('openInterest', k['openInterest']) \
                             .field('volume', k['totalVolume']) \
-                            .field('theta', k['theta']) \
-                            .field('delta', k['delta']) \
-                            .field('volatility', k['volatility']) \
+                            .field('theta', float(k['theta'])) \
+                            .field('delta', float(k['delta'])) \
+                            .field('volatility', float(k['volatility'])) \
                             .field('daysToExpiration', k['daysToExpiration']) \
                             .field('percentChange', k['percentChange']) \
                             .field('mark', k['mark']) \
                             .field('timeValue', k['timeValue'])
                         points.append(p)
-        print(f'Storing {len(points)} contracts')
+        logging.info(f'Storing {len(points)} contracts')
         write_api.write(bucket, org, points)
 
 if __name__ == '__main__':
-    print(f"Started {__file__.rsplit('/', maxsplit=1)[-1]}")
-
+    logging.info('Started %s', __file__.rsplit('/', maxsplit=1)[-1])
     sched = BlockingScheduler()
     sched.add_job(main, trigger='cron', day_of_week='1-5', hour='9-16', second='*/30')
     sched.start()
