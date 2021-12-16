@@ -8,7 +8,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+logging.basicConfig(format='%(levelname)s %(message)s',
                     level=logging.INFO)
 
 
