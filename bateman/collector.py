@@ -68,5 +68,5 @@ def main():
 if __name__ == '__main__':
     logging.info('Started %s', __file__.rsplit('/', maxsplit=1)[-1])
     sched = BlockingScheduler()
-    sched.add_job(main, trigger='cron', day_of_week='1-5', hour='9-16', second='*/30')
+    sched.add_job(main, trigger='cron', day_of_week='1-5', hour='14-21', second='*/30')
     sched.start()
