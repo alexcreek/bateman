@@ -22,7 +22,10 @@ def parse_arguments():
 
 def stock(ticker):
     last = spivey.Client().underlying(ticker)
-    return Point('underlying').tag('symbol', ticker).field('last', float(last))
+    try:
+        return Point('underlying').tag('symbol', ticker).field('last', float(last))
+    except TypeError:
+        return Point('underlying').tag('symbol', ticker).field('last', None)
 
 def options(ticker):
     o = spivey.Client().options(ticker, 90)
