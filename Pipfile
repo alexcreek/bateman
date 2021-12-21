@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-spivey = {editable = true, ref = "main", git = "https://github.com/alexcreek/spivey.git"}
+spivey = {editable = true, ref = "develop", git = "https://github.com/alexcreek/spivey.git"}
 python-dotenv = "*"
 influxdb-client = "==1.*"
 apscheduler = "==3.8.*"
