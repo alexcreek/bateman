@@ -48,7 +48,7 @@ def options(ticker):
                         .field('delta', float(k['delta'])) \
                         .field('volatility', float(k['volatility'])) \
                         .field('daysToExpiration', k['daysToExpiration']) \
-                        .field('percentChange', k['percentChange']) \
+                        .field('markPercentChange', k['markPercentChange']) \
                         .field('mark', k['mark']) \
                         .field('timeValue', k['timeValue'])
                     )
