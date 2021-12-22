@@ -47,10 +47,8 @@ def options(ticker):
                         .field('theta', float(k['theta'])) \
                         .field('delta', float(k['delta'])) \
                         .field('volatility', float(k['volatility'])) \
-                        .field('daysToExpiration', k['daysToExpiration']) \
                         .field('markPercentChange', k['markPercentChange']) \
-                        .field('mark', k['mark']) \
-                        .field('timeValue', k['timeValue'])
+                        .field('mark', k['mark'])
                     )
     return points
 
