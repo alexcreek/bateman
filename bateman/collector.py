@@ -46,6 +46,9 @@ def options(ticker):
                         .field('volume', k['totalVolume']) \
                         .field('theta', float(k['theta'])) \
                         .field('delta', float(k['delta'])) \
+                        .field('gamma', float(k['gamma'])) \
+                        .field('vega', float(k['vega'])) \
+                        .field('rho', float(k['rho'])) \
                         .field('volatility', float(k['volatility'])) \
                         .field('markPercentChange', k['markPercentChange']) \
                         .field('mark', k['mark'])
