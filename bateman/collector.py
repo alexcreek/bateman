@@ -20,15 +20,15 @@ def parse_arguments():
 
     return parser.parse_args()
 
-def stock(ticker):
-    last = spivey.Client().underlying(ticker)
+def stock(ticker, client):
+    last = client.underlying(ticker)
     try:
         return Point('underlying').tag('symbol', ticker).field('last', float(last))
     except TypeError:
         return Point('underlying').tag('symbol', ticker).field('last', None)
 
-def options(ticker):
-    o = spivey.Client().options(ticker, 90)
+def options(ticker, client):
+    o = client.options(ticker, 90)
     points = []
 
     for _action in ['putExpDateMap', 'callExpDateMap']:
@@ -55,7 +55,7 @@ def options(ticker):
                     )
     return points
 
-def main(ticker, security_type):
+def main(ticker, security_type, client):
     # TODO: make a config file
     load_dotenv()
     try:
@@ -68,8 +68,8 @@ def main(ticker, security_type):
     bucket = 'main'
     influx_url = 'http://192.168.1.10:8086'
 
-    with InfluxDBClient(url=f'{influx_url}', token=token, org=org) as client:
-        write_api = client.write_api(write_options=SYNCHRONOUS)
+    with InfluxDBClient(url=f'{influx_url}', token=token, org=org) as influx_client:
+        write_api = influx_client.write_api(write_options=SYNCHRONOUS)
         #TODO
         # - figure out batch settings
         # - test putting theta and delta under greeks
@@ -80,9 +80,9 @@ def main(ticker, security_type):
         # - make a ui/api to CRUD jobs
         # - force utc
         if security_type == 'stock':
-            points = stock(ticker)
+            points = stock(ticker, client)
         else:
-            points = options(ticker)
+            points = options(ticker, client)
 
         logging.info('Storing %s data', ticker)
         write_api.write(bucket, org, points)
@@ -90,9 +90,10 @@ def main(ticker, security_type):
 if __name__ == '__main__':
     logging.info('Started %s', __file__.rsplit('/', maxsplit=1)[-1])
     args = parse_arguments()
+    c = spivey.Client()
     sched = BlockingScheduler()
     sched.add_job(
-        main, args=(args.ticker[0].upper(), args.security_type),
+        main, args=(args.ticker[0].upper(), args.security_type, c),
         trigger='cron', day_of_week='0-4', hour='14-20', second='*/30'
     )
     sched.start()
