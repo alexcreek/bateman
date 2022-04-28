@@ -94,6 +94,6 @@ if __name__ == '__main__':
     sched = BlockingScheduler()
     sched.add_job(
         main, args=(args.ticker[0].upper(), args.security_type, c),
-        trigger='cron', day_of_week='0-4', hour='14-20', second='*/30'
+        trigger='cron', day_of_week='0-4', hour='13-19', second='*/30'
     )
     sched.start()
