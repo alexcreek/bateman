@@ -16,7 +16,9 @@ pipeline {
       steps {
         script {
           def image = docker.build("192.168.1.10:4000/bateman:latest")
-          image.push()
+          image.tag("$GIT_BRANCH")
+          image.push("latest")
+          image.push("$GIT_BRANCH")
         }
       }
     }
