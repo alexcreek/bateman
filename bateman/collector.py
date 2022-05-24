@@ -15,6 +15,7 @@ logging.basicConfig(format='%(levelname)s %(message)s',
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Collect stock market data')
     parser.add_argument('ticker', nargs=1, type=str)
+    parser.add_argument('-d', '--days', type=int, default=90)
     parser.add_argument('-t', '--type', dest='security_type', help='security type',
                         choices=['stock', 'option'], default='option')
 
@@ -27,8 +28,8 @@ def stock(ticker, client):
     except TypeError:
         return Point('underlying').tag('symbol', ticker).field('last', None)
 
-def options(ticker, client):
-    o = client.options(ticker, 90)
+def options(ticker, client, days):
+    o = client.options(ticker, days)
     points = []
 
     for _action in ['putExpDateMap', 'callExpDateMap']:
@@ -51,7 +52,7 @@ def options(ticker, client):
                     )
     return points
 
-def main(ticker, security_type, client):
+def main(ticker, security_type, client, days):
     # TODO: make a config file
     load_dotenv()
     try:
@@ -78,7 +79,7 @@ def main(ticker, security_type, client):
         if security_type == 'stock':
             points = stock(ticker, client)
         else:
-            points = options(ticker, client)
+            points = options(ticker, client, days)
 
         logging.info('Storing %s data', ticker)
         write_api.write(bucket, org, points)
@@ -89,7 +90,7 @@ if __name__ == '__main__':
     c = spivey.Client()
     sched = BlockingScheduler()
     sched.add_job(
-        main, args=(args.ticker[0].upper(), args.security_type, c),
+        main, args=(args.ticker[0].upper(), args.security_type, c, args.days),
         trigger='cron', day_of_week='0-4', hour='13-19', second='*/30'
     )
     sched.start()
